@@ -1,0 +1,20 @@
+# http-logger.yaml
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: http-logger
+spec:
+  flows:
+    - from:
+        uri: "platform-http:/logme"
+        parameters:
+          httpMethodRestrict: "POST" 
+      steps:
+        - log:
+            message: "Received body: ${body}"
+            level: INFO
+        - set-body:
+            constant: '{"status": "Body logged successfully"}'
+        - set-header:
+            name: Content-Type
+            constant: application/json
