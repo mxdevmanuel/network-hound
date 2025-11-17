@@ -1,20 +1,34 @@
-# http-logger.yaml
 apiVersion: camel.apache.org/v1
 kind: Integration
 metadata:
   name: http-logger
+  namespace: camel-k
 spec:
-  flows:
-    - from:
-        uri: "platform-http:/logme"
-        parameters:
-          httpMethodRestrict: "POST" 
-      steps:
-        - log:
-            message: "Received body: ${body}"
-            level: INFO
-        - set-body:
-            constant: '{"status": "Body logged successfully"}'
-        - set-header:
-            name: Content-Type
-            constant: application/json
+  sources:
+    - name: http-logger.yaml
+      content: |
+        # Camel YAML DSL: list of route definitions
+        - route:
+            id: http-logger
+            from:
+              uri: platform-http:/log
+              steps:
+                - setHeader:
+                    name: Content-Type
+                    constant: text/plain
+                - setBody:
+                    simple: "OK - ${date:now:yyyy-MM-dd HH:mm:ss}"
+                - log:
+                    message: "Handled request on /log"
+
+  traits:
+    service:
+      enabled: true
+    ingress:
+      enabled: true
+      host: logger.morarosa.xyz
+      path: /
+      tlsSecretName: morarosa
+      annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.priority: "5"
